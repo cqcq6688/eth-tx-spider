@@ -1,4 +1,4 @@
-# 1 个可以部署到 Blocklet Server 的eth交易记录爬虫应用
+# 基于Blocklet的eth交易记录爬虫
 ## 功能要求
 从 etherscan 上抓取并返回给定账户的交易历史，源数据页面见：https://etherscan.io/txs?a=0xeb2a81e229b68c1c22b6683275c00945f9872d90 (如果网络有问题可以使用备用站点: https://cn.etherscan.com/txs?a=0xeb2a81e229b68c1c22b6683275c00945f9872d90 或https://blockscan.com/address/0xeb2a81e229b68c1c22b6683275c00945f9872d90)
 
@@ -10,6 +10,50 @@
 - 最终提交的代码应该是一个 Blocklet, 可以打包、部署，并运行在 Blocklet Server 中。
 - 应该编写测试，并且测试能全部通过，测试不限于单元测试和 E2E 测试
 - API 对输入参数的边界处理，错误处理要合理
+
+## 技术方案
+
+### 流程图
+
+![image-20221103184629219](https://wywjd.oss-cn-shenzhen.aliyuncs.com/picgo/image-20221103184629219.png)
+
+### 技术选型
+
+1、服务端：基于create blocklet 的 api服务模板（nodejs + express 工程）
+
+2、爬虫：superagent + cheerio，请求+数据解析
+
+3、缓存：node-cache，首次请求时用时约1000ms，再次请求同一接口用时25ms
+
+4、测试框架：jest
+
+### 测试用例
+
+![用例](https://wywjd.oss-cn-shenzhen.aliyuncs.com/picgo/%E7%94%A8%E4%BE%8B.jpg)
+
+自测结果：
+
+![image-20221103195800003](https://wywjd.oss-cn-shenzhen.aliyuncs.com/picgo/image-20221103195800003.png)
+
+### 注意事项
+
+#### 网络问题
+
+1、功能要求提供的几个网站，均无法满足在大陆地区的良好访问（etherscan及其备用站都无法访问，blockscan返回的数据实际是etherscan，且速度非常慢）
+
+![image-20221103183154683](https://wywjd.oss-cn-shenzhen.aliyuncs.com/picgo/image-20221103183154683.png)
+
+未设置代理时，在大陆地区请求http://localhost:3030/api/txs?a=0...会出现如下报错：
+
+![image-20221103182818732](https://wywjd.oss-cn-shenzhen.aliyuncs.com/picgo/image-20221103182818732.png)
+
+![image-20221103183634359](https://wywjd.oss-cn-shenzhen.aliyuncs.com/picgo/image-20221103183634359.png)
+
+2、因网络问题设置了代理，dev环境运行时需要自行设置。设置地址如下图所示，在dev环境下时会将127.0.0.1:1080作为代理
+
+![image-20221103183736153](https://wywjd.oss-cn-shenzhen.aliyuncs.com/picgo/image-20221103183736153.png)
+
+
 
 ## Getting Started with Create Blocklet
 
