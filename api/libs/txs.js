@@ -1,8 +1,12 @@
 /* eslint-disable prettier/prettier */
 const express = require('express')
-const router = express.Router()
 const validate = require('validate.js')
 const spiderEtherrscan = require('../utils/spider-etherscan')
+const apiCache = require('../utils/api-cache')
+const env = require('./env')
+
+const router = express.Router()
+const { apiTTL } = env
 
 const pageSize = ['10', '25', '50', '100']
 const constraints = {
@@ -25,7 +29,8 @@ const constraints = {
     }
 }
 
-router.use(function timeLog (req, res, next) {
+// 检查入参
+router.use(function checkParams (req, res, next) {
     const errors = validate(req.query, constraints)
 
     if (errors) {
@@ -34,7 +39,11 @@ router.use(function timeLog (req, res, next) {
     next()
 })
 
-router.get('/',(req, res) => {
+// 请求缓存
+router.use(apiCache(apiTTL))
+
+// 爬取数据
+router.get('/', (req, res) => {
     const params = {
         address: req.query.a,
         page: Number(req.query.page) || 1,

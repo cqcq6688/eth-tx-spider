@@ -26,3 +26,5 @@ app.use('/api/txs', txs);
 app.listen(port, () => {
   console.log(`Blocklet app listening on port ${port}`);
 });
+
+module.exports = app

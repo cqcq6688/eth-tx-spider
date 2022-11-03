@@ -2,23 +2,29 @@
 const superagent = require('superagent')
 require('superagent-proxy')(superagent)
 const cheerio = require('cheerio')
+const env = require('../libs/env')
 
-const isDev = process.env.NODE_ENV === 'development'
-const proxy = isDev ? 'http://127.0.0.1:1080' : null // 设置本地翻墙，否则无法访问 etherscan
+const { proxy } = env
 
 const spider = (params, callback) => {
     const { address, page, pageSize } = params
     const url = `https://etherscan.io/txs?a=${address}&p=${page}&ps=${pageSize}`
-    // 1. 获取网页
+    // console.log('开始抓取页面', url)
+    // 1. 抓取网页
     superagent.get(url)
     // superagent.get(`https://google.com`)
     .proxy(proxy)
      // 2. 解析内容
     .end((err, res) => {
         if (err) {
-            console.log(err, res)
-            return callback(err)
+            console.warn('抓取失败', err, res)
+            return callback({
+                msg: '获取数据失败，请重试',
+                errors: err
+            })
         }
+
+        // console.log('页面获取成功，开始解析数据', url)
 
         const retData = {
             ...params,
@@ -90,14 +96,11 @@ const spider = (params, callback) => {
 
         retData.pageSize = retData.pageSize || Number($('#ContentPlaceHolder1_ddlRecordsPerPage').val())
 
-        if (isDev) {
-            retData._res = res
-            retData._url = url
-        }
-
+        // retData._res = res
+        // etData._url = url
+        console.log('完成抓取，返回结果', url)
         return callback(null, retData)
     })
-
 }
 
 module.exports = spider
